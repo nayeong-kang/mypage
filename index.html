@@ -111,6 +111,27 @@ table.lst th{background:#F7F8FA;color:var(--sub);font-weight:600}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
 .kpi{background:#fff;border:1px solid var(--line);padding:12px 16px} .kpi .h{font-size:13px;color:var(--sub)} .kpi .v{font-size:26px;font-weight:700;margin-top:4px} .kpi .d{font-size:12px;margin-top:2px;color:var(--sub)}
 .dash{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin-bottom:14px}
+
+@media (max-width:760px){
+ body{font-size:14px}
+ .lg{width:calc(100% - 32px);padding:26px 20px}
+ header{height:auto;flex-wrap:wrap;padding:10px 14px;gap:6px}
+ header .t{font-size:16px} header .t small{display:block;margin:2px 0 0}
+ .user{flex-wrap:wrap;gap:6px;font-size:12px} .user .chip{padding:3px 7px}
+ nav{padding:0 8px;overflow-x:auto} nav button{padding:12px 10px;font-size:14px;white-space:nowrap}
+ main{padding:14px}
+ .sumrow,.kpis{grid-template-columns:repeat(2,1fr)}
+ .grid{grid-template-columns:1fr}
+ .two,.dash{grid-template-columns:1fr}
+ .sep{flex-direction:column} .sep .arr{justify-content:center;transform:rotate(90deg)}
+ .banner{flex-direction:column;align-items:flex-start}
+ .tool input{width:100%}
+ .vt{margin-left:0}
+ table.lst{display:block;overflow-x:auto;white-space:nowrap}
+ .why tr{display:block;border-bottom:1px solid #EEF1F4;padding:6px 0} .why td{display:block;border:0;padding:2px 4px;width:auto!important;text-align:left!important}
+ .mbox{width:calc(100% - 24px)}
+ .tabs{overflow-x:auto} .tabs button{white-space:nowrap;padding:10px 12px}
+}
 </style>
 </head>
 <body>
@@ -123,7 +144,7 @@ table.lst th{background:#F7F8FA;color:var(--sub);font-weight:600}
     <label>사용자 구분</label>
     <select id="role"><option value="op">현장 작업자</option><option value="eng">모델 담당 엔지니어</option></select>
     <button class="btn" id="go">로그인</button>
-    <div class="hint">※ 시연용 화면입니다. 설비별 수치는 본 연구 실험 결과(Adapter 1%, 15회 반복, 누수 제거 후 AUROC)이며, 사용자 정보는 가상입니다.</div>
+    <div class="hint">※ 시연용 화면입니다. 설비별 수치는 본 연구 실험 결과(Adapter 1%, 15회 반복, 중복 제거 후 AUROC)이며, 사용자 정보는 가상입니다.</div>
   </div>
 </section>
 <section id="app" class="hide">
@@ -159,7 +180,7 @@ const SINCE={hd:1,na:1};
 const since=(e,c)=>{const h=HIST.filter(r=>r.id===e.id).slice(-1)[0];return c==="na"?"데이터 추가 대기":(h?`${h.tm.split(" ")[0]}부터 보류`:"작업자 결정 대기");};
 const $=s=>document.querySelector(s);
 const f3=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(3);
-const LAB={ok:"AI 적용 승인 후보",rv:"작업자 검토",hd:"AI 적용 보류",na:"AI 적용 보류 (평가 불가)"};
+const LAB={ok:"승인 후보",rv:"작업자 검토",hd:"적용 보류",na:"평가 불가"};
 function judge(e){
   const G=(e.np>0&&e.nn>0)?1:0;
   if(!G) return {c:"na",lab:LAB.na,G,rule:"식 (1)  G = 0"};
@@ -172,7 +193,7 @@ const MSG={
  ok:"승인 점수가 기준을 통과했습니다. 작업자가 최종 승인하면 AI 판정을 적용합니다.",
  rv:"승인 점수가 기준보다 낮습니다. 작업자가 확인한 뒤 적용 여부를 정합니다.",
  hd:"반복 적응 중 허용 기준을 넘는 성능 저하가 있었습니다. 설비는 평소대로 운전하고, AI 판정만 적용하지 않습니다.",
- na:"누수 제거 후 이상·정상 구간이 모두 남지 않아 평가할 수 없습니다. AI 판정은 적용하지 않습니다."
+ na:"중복 제거 시 남는 평가 윈도우가 없어(이상·정상 모두 0개) 평가할 수 없습니다. AI 판정은 적용하지 않습니다."
 };
 const ACT={ok:"승인 근거를 확인하고 [최종 승인]을 눌러 주세요. 현장 상태와 다르면 조치 요청을 보내 주세요.",
  rv:"승인 근거를 보고 승인 또는 보류를 정해 주세요. 판단이 어려우면 조치 요청을 보내 주세요.",
@@ -181,11 +202,11 @@ const ACT={ok:"승인 근거를 확인하고 [최종 승인]을 눌러 주세요
 // 최종 승인 (작업자, HITL) — 자동 판정과 별도로 저장
 const FA={}; E.forEach(e=>FA[e.id]="대기");
 const HIST=[
- {tm:"10.15 09:10",id:"Boiler_1to2",auto:"AI 적용 승인 후보",fin:"승인",by:"김현우"},
- {tm:"10.15 09:14",id:"Boiler_3to1",auto:"AI 적용 보류",fin:"보류",by:"김현우"},
- {tm:"10.15 13:40",id:"Boiler_3to1",auto:"AI 적용 보류",fin:"수정 요청",by:"이서준"},
+ {tm:"10.15 09:10",id:"Boiler_1to2",auto:"승인 후보",fin:"승인",by:"김현우"},
+ {tm:"10.15 09:14",id:"Boiler_3to1",auto:"적용 보류",fin:"보류",by:"김현우"},
+ {tm:"10.15 13:40",id:"Boiler_3to1",auto:"적용 보류",fin:"수정 요청",by:"이서준"},
  {tm:"10.16 08:52",id:"Boiler_2to3",auto:"작업자 검토",fin:"보류",by:"박지민"},
- {tm:"10.16 09:05",id:"Boiler_2to1",auto:"AI 적용 승인 후보",fin:"승인",by:"김현우"}];
+ {tm:"10.16 09:05",id:"Boiler_2to1",auto:"승인 후보",fin:"승인",by:"김현우"}];
 HIST.forEach(h=>FA[h.id]=h.fin);
 HIST.reverse();
 const FAC={"대기":"fa-wait","승인":"fa-ok","보류":"fa-hold","수정 요청":"fa-rev"};
@@ -198,12 +219,12 @@ function show(tab){
 function renderList(){
   const J=E.map(judge), cnt=k=>J.filter(j=>j.c===k).length, wait=E.filter((e,i)=>FA[e.id]==="대기"&&(J[i].c==='ok'||J[i].c==='rv')).length;
   let h=`<div class="meta">판정 갱신 ${UPD}</div><div class="sumrow">
-   <div class="sum"><span class="l">AI 적용 승인 후보</span><span class="n" style="color:var(--green)">${cnt('ok')}</span></div>
+   <div class="sum"><span class="l">승인 후보</span><span class="n" style="color:var(--green)">${cnt('ok')}</span></div>
    <div class="sum"><span class="l">작업자 검토</span><span class="n" style="color:var(--amber)">${cnt('rv')}</span></div>
-   <div class="sum"><span class="l">AI 적용 보류</span><span class="n" style="color:var(--red)">${cnt('hd')}</span></div>
-   <div class="sum"><span class="l">AI 적용 보류 (평가 불가)</span><span class="n" style="color:var(--gray)">${cnt('na')}</span></div></div>
+   <div class="sum"><span class="l">적용 보류</span><span class="n" style="color:var(--red)">${cnt('hd')}</span></div>
+   <div class="sum"><span class="l">평가 불가</span><span class="n" style="color:var(--gray)">${cnt('na')}</span></div></div>
    <div class="tool"><input id="q" placeholder="설비(적응 조합) 검색" value="${FIL.q}">
-    ${[["all","전체"],["ok","승인 후보"],["rv","작업자 검토"],["hd","AI 적용 보류"],["na","평가 불가"]].map(([k,l])=>`<button class="chip2 ${FIL.st===k?'on':''}" data-st="${k}">${l}</button>`).join('')}
+    ${[["all","전체"],["ok","승인 후보"],["rv","작업자 검토"],["hd","적용 보류"],["na","평가 불가"]].map(([k,l])=>`<button class="chip2 ${FIL.st===k?'on':''}" data-st="${k}">${l}</button>`).join('')}
     <select id="ds">${["all","보일러","SMD","MSL","베어링","배관"].map(d=>`<option value="${d}" ${FIL.ds===d?'selected':''}>${d==='all'?'데이터 전체':d}</option>`).join('')}</select>
     <span style="font-size:13px;color:var(--sub)">최종 승인 대기 <b style="color:var(--navy)">${wait}</b>건</span>
     <div class="vt"><button data-v="card" class="${FIL.view==='card'?'on':''}">카드</button><button data-v="table" class="${FIL.view==='table'?'on':''}">표</button></div></div>`;
@@ -250,7 +271,7 @@ function openDetail(i){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
   ["list","hist","voe","stat"].forEach(t=>$('#v-'+t).classList.add('hide')); $('#v-detail').classList.remove('hide');
   const bc={ok:'#2F7A3B',rv:'#D99A1E',hd:'#A3322A',na:'#6B7280'}[j.c];
-  const r1=`<tr><td class="k">(1) 평가 가능 여부 G</td><td>누수 제거 후 이상 ${e.np.toLocaleString()} · 정상 ${e.nn.toLocaleString()} 윈도우</td><td class="r ${j.G?'pass':'fail'}">G = ${j.G} ${j.G?'통과':'→ 보류'}</td></tr>`;
+  const r1=`<tr><td class="k">(1) 평가 가능 여부 G</td><td>중복 제거 후 이상 ${e.np.toLocaleString()} · 정상 ${e.nn.toLocaleString()} 윈도우</td><td class="r ${j.G?'pass':'fail'}">G = ${j.G} ${j.G?'통과':'→ 보류'}</td></tr>`;
   let r2,r3;
   if(j.c==='na'){r2=`<tr><td class="k">(2) 최대 성능 저하 D</td><td>평가할 수 없어 계산하지 않음</td><td class="r skip">—</td></tr>`;r3=`<tr><td class="k">(3) 승인 점수 S</td><td>—</td><td class="r skip">—</td></tr>`;}
   else{r2=`<tr><td class="k">(2) 최대 성능 저하 D</td><td>${j.K}회 반복 중 가장 크게 떨어진 값 (허용 δ = ${DEL.toFixed(3)})</td><td class="r ${j.D>DEL?'fail':'pass'}">D = ${j.D.toFixed(3)} ${j.D>DEL?'→ 보류':'통과'}</td></tr>`;
@@ -283,8 +304,8 @@ function openDetail(i){
      <tr><td>적응 조합 (원본 → 대상)</td><td>${e.id}</td></tr><tr><td>데이터</td><td>${e.ds}</td></tr>
      <tr><td>평가 윈도우</td><td>${e.ne.toLocaleString()}개</td></tr>
      <tr><td>학습·평가 시간 구간 중복</td><td>${(e.leak*100).toFixed(1)}% 제거 (시간 구간 기준)</td></tr>
-     <tr><td>누수 제거 후 남은 윈도우</td><td>이상 ${e.np.toLocaleString()} · 정상 ${e.nn.toLocaleString()}</td></tr>
-     <tr><td>반복 적응 횟수 K</td><td>${e.seeds.length||'—'} (평가 가능 반복)</td></tr>
+     <tr><td>중복 제거 후 남은 윈도우</td><td>이상 ${e.np.toLocaleString()} · 정상 ${e.nn.toLocaleString()}</td></tr>
+     <tr><td>반복 적응 횟수 R</td><td>${e.seeds.length||'—'} (평가 가능 반복)</td></tr>
      <tr><td>Adapter</td><td>128→32→128 · 8,352개 파라미터 · 32.6 KB</td></tr>
      <tr><td>판정 갱신</td><td>${UPD}</td></tr></table></div>`;
   const mon=`<div class="box" id="t-mon"><h3>반복 적응 결과 (적응 전 대비 AUROC 변화)</h3>${j.c==='na'?'<div style="color:var(--sub);font-size:14px;padding:20px 0">평가할 수 없는 조합이라 반복 결과가 없습니다.</div>':strip(e,j)}<div class="legend">빨간 막대는 허용 저하(δ = ${DEL.toFixed(3)})를 넘은 반복입니다.</div></div>`;
@@ -349,7 +370,7 @@ function renderStat(){
   const J=E.map(judge), ev=J.filter(j=>j.c!=='na'), fin=k=>E.filter(e=>FA[e.id]===k).length;
   const mA=ev.reduce((a,j)=>a+j.m,0)/ev.length, mD=Math.max(...ev.map(j=>j.D));
   let h=`<div class="meta">판정 갱신 ${UPD}</div><div class="kpis">
-   <div class="kpi"><div class="h">평가 가능 설비 (G = 1)</div><div class="v">${ev.length} / ${E.length}</div><div class="d">누수 제거 후 이상·정상이 모두 남은 조합</div></div>
+   <div class="kpi"><div class="h">평가 가능 설비 (G = 1)</div><div class="v">${ev.length} / ${E.length}</div><div class="d">중복 제거 후 이상·정상이 모두 남은 조합</div></div>
    <div class="kpi"><div class="h">평균 성능 변화 ΔĀ</div><div class="v">${f3(mA)}</div><div class="d">평가 가능 설비 평균 (AUROC)</div></div>
    <div class="kpi"><div class="h">최대 성능 저하 D (최악 설비)</div><div class="v" style="color:var(--red)">${mD.toFixed(3)}</div><div class="d">허용 δ = ${DEL.toFixed(3)} 초과 설비 ${J.filter(j=>j.c==='hd').length}개</div></div>
    <div class="kpi"><div class="h">작업자 최종 승인 대기</div><div class="v" style="color:var(--navy)">${E.filter((e,i)=>FA[e.id]==='대기'&&(J[i].c==='ok'||J[i].c==='rv')).length}</div><div class="d">점수 통과·검토 대상 중 미결정</div></div></div>
@@ -357,11 +378,11 @@ function renderStat(){
     <div class="box"><h3>설비별 승인 점수</h3>${sbars()}</div></div>
    <div class="stat"><div class="formula">(1) G = 1[n⁺ &gt; 0 ∧ n⁻ &gt; 0] &nbsp;→&nbsp; (2) D = max(0, −min<sub>k</sub>(A<sub>k</sub> − A⁰)) ≤ δ &nbsp;→&nbsp; (3) S = G·(ΔĀ − λD) ≥ τ &nbsp;&nbsp;&nbsp;
    <span style="font-family:inherit;color:#5B6575;font-size:13px">시연용 기준: τ = ${TAU.toFixed(3)}, δ = ${DEL.toFixed(3)}, λ = ${LAM}</span></div>
-   <table class="lst"><tr><th>설비 (적응 조합)</th><th>G</th><th>남은 이상/정상</th><th>K</th><th>ΔĀ</th><th>D</th><th>S</th><th>① 자동 판정</th><th>② 작업자 최종 승인</th></tr>`;
+   <table class="lst"><tr><th>설비 (적응 조합)</th><th>G</th><th>남은 이상/정상</th><th>R</th><th>ΔĀ</th><th>D</th><th>S</th><th>① 자동 판정</th><th>② 작업자 최종 승인</th></tr>`;
   E.forEach(e=>{const j=judge(e);h+=`<tr><td>${e.nm}</td><td>${j.G}</td><td>${e.np.toLocaleString()} / ${e.nn.toLocaleString()}</td><td>${j.K||'—'}</td>
    <td>${j.m!==undefined?f3(j.m):'—'}</td><td>${j.D!==undefined?j.D.toFixed(3):'—'}</td>
    <td>${j.S!==undefined?f3(j.S):'—'}</td><td><span class="pill ${{ok:'p3',rv:'p2',hd:'p4',na:'p1'}[j.c]}">${j.lab}</span></td><td><span class="fa ${FAC[FA[e.id]]}">${FA[e.id]}</span></td></tr>`});
-  $('#v-stat').innerHTML=h+'</table><div class="note">엔지니어 전용 화면입니다. 수치: Adapter(1%) · 누수 제거 후 AUROC · 반복 K회 (본 연구 실험 결과).</div></div>';
+  $('#v-stat').innerHTML=h+'</table><div class="note">엔지니어 전용 화면입니다. 수치: Adapter(1%) · 중복 제거 후 AUROC · 반복 R회 (본 연구 실험 결과).</div></div>';
 }
 function toast(t){const x=$('#toast');x.textContent=t;x.classList.remove('hide');setTimeout(()=>x.classList.add('hide'),2600)}
 $('#go').onclick=()=>{
